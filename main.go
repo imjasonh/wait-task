@@ -8,6 +8,7 @@ import (
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	runinformer "github.com/tektoncd/pipeline/pkg/client/injection/informers/pipeline/v1alpha1/run"
 	runreconciler "github.com/tektoncd/pipeline/pkg/client/injection/reconciler/pipeline/v1alpha1/run"
+	tkncontroller "github.com/tektoncd/pipeline/pkg/controller"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
@@ -35,33 +36,11 @@ func newController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 	c.enqueueAfter = impl.EnqueueAfter
 
 	runinformer.Get(ctx).Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-		FilterFunc: FilterRunRef("example.dev/v0", "Wait"),
+		FilterFunc: tkncontroller.FilterRunRef("example.dev/v0", "Wait"),
 		Handler:    controller.HandleAll(impl.Enqueue),
 	})
 
 	return impl
-}
-
-// FilterRunRef returns a filter that can be passed to a Run Informer, which
-// filters out Runs for apiVersion and kinds that this controller doesn't care
-// about.
-// TODO: Provide this as a helper function.
-func FilterRunRef(apiVersion, kind string) func(interface{}) bool {
-	return func(obj interface{}) bool {
-		r, ok := obj.(*v1alpha1.Run)
-		if !ok {
-			// Somehow got informed of a non-Run object.
-			// Ignore.
-			return false
-		}
-		if r == nil || r.Spec.Ref == nil {
-			// These are invalid, but just in case they get
-			// created somehow, don't panic.
-			return false
-		}
-
-		return r.Spec.Ref.APIVersion == apiVersion && r.Spec.Ref.Kind == v1alpha1.TaskKind(kind)
-	}
 }
 
 type Reconciler struct {

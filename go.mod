@@ -19,7 +19,7 @@ require (
 	sigs.k8s.io/testing_frameworks v0.1.1 // indirect
 )
 
-replace github.com/tektoncd/pipeline => github.com/tektoncd/pipeline v0.14.1-0.20200709162057-73e531c04489
+replace github.com/tektoncd/pipeline => github.com/tektoncd/pipeline v0.14.1-0.20200713190658-8e9230d68634
 
 // Knative deps (release-0.16)
 replace (
