@@ -29,7 +29,7 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/part-of: wait-task
 rules:
-    # Controller needs cluster access to all Run CRs.
+  # Controller needs cluster access to all Run CRs.
   - apiGroups: ["tekton.dev"]
     resources: ["runs"]
     verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
@@ -40,7 +40,12 @@ rules:
     resources: ["runs/status"]
     verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
 
-    # Controller needs permission to emit events associated with Run CRs.
+  # Controller needs permission to configure master-election.
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+
+  # Controller needs permission to emit events associated with Run CRs.
   - apiGroups: [""]
     resources: ["events"]
     verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]

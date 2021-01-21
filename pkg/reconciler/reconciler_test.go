@@ -11,17 +11,20 @@ import (
 	"knative.dev/pkg/apis"
 )
 
+var validRef = &v1alpha1.TaskRef{
+	APIVersion: "example.dev/v0",
+	Kind:       "Wait",
+}
+
 func TestReconcile(t *testing.T) {
+	t.Parallel()
 	ctx := context.Background()
 	r := &v1alpha1.Run{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "run",
 		},
 		Spec: v1alpha1.RunSpec{
-			Ref: &v1alpha1.TaskRef{
-				APIVersion: "example.dev/v0",
-				Kind:       "Wait",
-			},
+			Ref: validRef,
 			Params: []v1beta1.Param{{
 				Name:  "duration",
 				Value: *v1beta1.NewArrayOrString("1s"),
@@ -54,16 +57,30 @@ func TestReconcile(t *testing.T) {
 }
 
 func TestReconcile_Failure(t *testing.T) {
+	t.Parallel()
 	for _, c := range []struct {
 		desc string
 		r    *v1alpha1.Run
 	}{{
-		desc: "no params",
-		r:    &v1alpha1.Run{},
+		desc: "unexpected ref name",
+		r: &v1alpha1.Run{
+			Spec: v1alpha1.RunSpec{
+				Ref: &v1alpha1.TaskRef{
+					APIVersion: "example.dev/v0",
+					Kind:       "Wait",
+					Name:       "wtf",
+				},
+				Params: []v1beta1.Param{{
+					Name:  "duration",
+					Value: *v1beta1.NewArrayOrString("1h"),
+				}},
+			},
+		},
 	}, {
 		desc: "no duration param",
 		r: &v1alpha1.Run{
 			Spec: v1alpha1.RunSpec{
+				Ref: validRef,
 				Params: []v1beta1.Param{{
 					Name:  "not-duration",
 					Value: *v1beta1.NewArrayOrString("blah"),
@@ -74,6 +91,7 @@ func TestReconcile_Failure(t *testing.T) {
 		desc: "extra params",
 		r: &v1alpha1.Run{
 			Spec: v1alpha1.RunSpec{
+				Ref: validRef,
 				Params: []v1beta1.Param{{
 					Name:  "not-duration",
 					Value: *v1beta1.NewArrayOrString("blah"),
@@ -87,6 +105,7 @@ func TestReconcile_Failure(t *testing.T) {
 		desc: "duration param not a string",
 		r: &v1alpha1.Run{
 			Spec: v1alpha1.RunSpec{
+				Ref: validRef,
 				Params: []v1beta1.Param{{
 					Name:  "duration",
 					Value: *v1beta1.NewArrayOrString("blah", "blah", "blah"),
@@ -97,6 +116,7 @@ func TestReconcile_Failure(t *testing.T) {
 		desc: "invalid duration value",
 		r: &v1alpha1.Run{
 			Spec: v1alpha1.RunSpec{
+				Ref: validRef,
 				Params: []v1beta1.Param{{
 					Name:  "duration",
 					Value: *v1beta1.NewArrayOrString("blah"),

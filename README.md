@@ -1,11 +1,26 @@
-# Wait for Tekton
+# Wait Custom Task for Tekton
 
 This repo provides an experimental [Tekton Custom
-Task](https://github.com/tektoncd/community/pull/128) that, when run, simply
-waits a given amount of time, specified by an input parameter.
+Task](https://tekton.dev/docs/pipelines/runs/) that, when run, simply waits a
+given amount of time before succeeding, specified by an input parameter named
+`duration`.
 
-The intention is to demonstrate the kinds of things a Custom Task can do, and
-to demonstrate how to write a Custom Task.
+### Motivation
+
+Some users might want their Pipeline to wait some amount of time between two
+tasks, for example, to deploy to one cluster then wait an hour before deploying
+to other clusters.
+
+This is possible without this Custom Task using a Task that sleeps (e.g.,
+`script: sleep 600`), but this results in Pods running on the cluster that are
+just sleeping. This wastes cluster resources, and if nodes on the cluster go
+down then those sleeps will fail, leading to flaky deployments.
+
+Instead, this Custom Task centralizes all wait operations in the Custom Task
+controller, which is more efficient and more fault tolerant.
+
+This also acts as a simple Custom Task that can be modified to perform other
+more complex actions.
 
 ## Install
 
@@ -18,12 +33,12 @@ ko apply -f controller.yaml
 This will build and install the controller on your cluster, in the namespace
 `wait-task`.
 
-## Run a Wait
+## Example
 
-Create a `Run` that refers to a `Wait`:
+Create and watch an example `Run` that waits for 10 seconds:
 
 ```
-$ kubectl create -f wait-run.yaml 
+$ kubectl create -f example-run.yaml 
 run.tekton.dev/wait-run-5pnzz created
 $ kubectl get runs -w
 NAME             SUCCEEDED   REASON    STARTTIME   COMPLETIONTIME

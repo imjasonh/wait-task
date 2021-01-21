@@ -28,6 +28,21 @@ func (c *Reconciler) ReconcileKind(ctx context.Context, r *v1alpha1.Run) kreconc
 		return nil
 	}
 
+	if r.Spec.Ref == nil ||
+		r.Spec.Ref.APIVersion != "example.dev/v0" || r.Spec.Ref.Kind != "Wait" {
+		// This is not a Run we should have been notified about; do nothing.
+		return nil
+	}
+	if r.Spec.Ref.Name != "" {
+		r.Status.Status.SetConditions([]apis.Condition{{
+			Type:    apis.ConditionSucceeded,
+			Status:  corev1.ConditionFalse,
+			Reason:  "UnexpectedName",
+			Message: fmt.Sprintf("Found unexpected ref name: %s", r.Spec.Ref.Name),
+		}})
+		return nil
+	}
+
 	expr := r.Spec.GetParam("duration")
 	if expr == nil || expr.Value.StringVal == "" {
 		r.Status.Status.SetConditions([]apis.Condition{{
