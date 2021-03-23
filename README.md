@@ -1,6 +1,10 @@
-# Wait Custom Task for Tekton
+# 🚨 This work has moved 🚨
 
-This repo provides an experimental [Tekton Custom
+This functionality is now available in Tekton's experimental repo: https://github.com/tektoncd/experimental/tree/main/wait-task
+
+---
+
+This repo provided an experimental [Tekton Custom
 Task](https://tekton.dev/docs/pipelines/runs/) that, when run, simply waits a
 given amount of time before succeeding, specified by an input parameter named
 `duration`.
